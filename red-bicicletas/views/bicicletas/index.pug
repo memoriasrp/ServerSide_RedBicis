@@ -1,0 +1,32 @@
+extends ../layout 
+
+block content 
+  .container.mt-5
+    .row
+      .col-md-12
+        h1.text-center.mb-4 Listado de Bicicletas 
+        
+        .d-flex.justify-content-between.mb-3
+          a.btn.btn-success(href='/bicicletas/create') + Crear Bicicleta
+        
+        .table-responsive
+          table.table.table-striped.table-hover.shadow-sm
+            thead.thead-dark
+              tr
+                th(scope='col') # 
+                th(scope='col') Color 
+                th(scope='col') Modelo 
+                th(scope='col') Ubicación
+                th(scope='col') Acciones
+                th
+            tbody 
+              each bicicleta in bicicletas 
+                tr 
+                  th(scope='row')
+                    a(href='/bicicletas/' + bicicleta.id + '/update')= bicicleta.id
+                  td= bicicleta.color 
+                  td= bicicleta.modelo
+                  td= bicicleta.ubicacion
+                  td 
+                    form.inline(method='post' action='/bicicletas/' + bicicleta.id + '/delete')
+                      button.btn.btn-danger.btn-sm(type='submit' name='submit_param' value='submit_value') Eliminar

@@ -1,0 +1,26 @@
+extends ../layout
+
+block content 
+    a(href='/bicicletas') Volver
+    br
+    br
+    br
+
+    h1 Actualizar Bicicleta
+    br 
+    br
+
+    form(action='/bicicletas/' + bicicleta.id + '/update' method='POST')
+        .mb-3
+        label.form-label(for='color') Color
+        input.form-control(type='text' id='color' name='color' value=bicicleta.color required)
+        .mb-3
+        label.form-label(for='modelo') Modelo
+        input.form-control(type='text' id='modelo' name='modelo' value=bicicleta.modelo required)
+        .mb-3
+        label.form-label(for='ubicacion') Ubicación Latitud
+        input.form-control(type='text' id='ubicacion' name='lat' value=bicicleta.ubicacion[0] required)
+        .mb-3
+        label.form-label(for='ubicacion') Ubicación Longitud
+        input.form-control(type='text' id='ubicacion' name='lng' value=bicicleta.ubicacion[1] required)
+        button.btn.btn-primary(type='submit') Actalizar
