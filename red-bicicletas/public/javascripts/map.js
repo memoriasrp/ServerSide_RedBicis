@@ -14,7 +14,7 @@ var circle = L.circle([-16.389443, -71.55112], {
     radius: 10
 }).addTo(map);
 
-var polygon = L.polygon([
+/* var polygon = L.polygon([
     [-16.383940, -71.551630], // A
     [-16.383916, -71.551566], // B
     [-16.383829, -71.551339], // C
@@ -27,12 +27,12 @@ var polygon = L.polygon([
     [-16.384358, -71.551598], // J
     [-16.384257, -71.551486]  // K
 ]).addTo(map);
-
+ */
 
 
 marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
 circle.bindPopup("I am a circle.");
-polygon.bindPopup("I am a polygon.");
+//polygon.bindPopup("I am a polygon.");
 
 // Definir sistemas de coordenadas
 const psad56_utm19s = '+proj=utm +zone=19 +south +ellps=intl +towgs84=-288,175,-376,0,0,0,0 +units=m +no_defs';
@@ -66,5 +66,20 @@ var polygon2 = L.polygon(polygonCoords, {
     weight: 2
 }).addTo(map);
 
-// Centrar el mapa en el polígono
-map.fitBounds(polygon2.getBounds());
+
+
+$.ajax({
+    dataType: 'json',
+    url: '/api/bicicletas',
+    method: 'GET',
+    success: function (data) {
+        console.log('Bicicletas cargadas:', data);
+        data.bicicletas.forEach(bici => {
+            L.marker(bici.ubicacion, { title: `Bicicleta ID: ${bici.id}` }).addTo(map)
+                .bindPopup(`Bicicleta ID: ${bici.id}<br>Color: ${bici.color}<br>Modelo: ${bici.modelo}`);
+        });
+    },
+    error: function (error) {
+        console.error('Error al cargar las bicicletas:', error);
+    }
+});
