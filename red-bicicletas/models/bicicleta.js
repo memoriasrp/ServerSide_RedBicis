@@ -33,12 +33,12 @@ Bicicleta.removeById = function (aBiciId) {
     }
 };
 
-var bici1 = new Bicicleta(1, 'rojo', 'urbana', [-16.39159, -71.55123]);
+/* var bici1 = new Bicicleta(1, 'rojo', 'urbana', [-16.39159, -71.55123]);
 var bici2 = new Bicicleta(2, 'verde', 'montaña', [-16.38512, -71.55122]);
 var bici3 = new Bicicleta(3, 'azul', 'eléctrica', [-16.39101, -71.56141]);
 
 Bicicleta.add(bici1);
 Bicicleta.add(bici2);
 Bicicleta.add(bici3);
-
+ */
 module.exports = Bicicleta;
