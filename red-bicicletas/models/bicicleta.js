@@ -1,44 +1,71 @@
-var Bicicleta = function (id, color, modelo, ubicacion) {
-    this.id = id;
-    this.color = color;
-    this.modelo = modelo;
-    this.ubicacion = ubicacion;
-};
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+const Counter = require('./counter'); // Importamos el modelo de contadores
 
-Bicicleta.prototype.toString = function () {
-    return 'id: ' + this.id + ' | color: ' + this.color;
-};
-
-Bicicleta.allBicis = [];
-
-Bicicleta.add = function (bici) {
-    Bicicleta.allBicis.push(bici);
-};
-
-Bicicleta.findById = function (aBiciId) {
-    var aBici = Bicicleta.allBicis.find(x => x.id == aBiciId);
-    if (aBici) {
-        return aBici;
-    } else {
-        throw new Error(`No existe una bicicleta con el id ${aBiciId}`);
+// 1. Definimos la estructura que tendrá cada bicicleta en la base de datos
+var bicicletaSchema = new Schema({
+    code: { type: Number, unique: true },
+    color: String,
+    modelo: String,
+    ubicacion: {
+        type: [Number],
+        index: { type: '2dsphere', sparse: true }
     }
-};
+});
 
-Bicicleta.removeById = function (aBiciId) {
-    for (var i = 0; i < Bicicleta.allBicis.length; i++) {
-        if (Bicicleta.allBicis[i].id == aBiciId) {
-            Bicicleta.allBicis.splice(i, 1);
-            return;
-        }
+bicicletaSchema.pre('save', async function (next) {
+    const doc = this;
+    // Si el documento ya tiene un código (por ejemplo, si lo estás editando), no hacemos nada
+    if (!doc.isNew) {
+        return;
     }
+    try {
+        // Usamos await en lugar de .then()
+        // Cambiamos 'new: true' por 'returnDocument: 'after'' para quitar el Warning
+        const counter = await Counter.findOneAndUpdate(
+            { id: 'bicicletaId' },
+            { $inc: { seq: 1 } },
+            { returnDocument: 'after', upsert: true }
+        );
+
+        doc.code = counter.seq; // Asignamos el código autoincrementado
+    } catch (error) {
+        // En funciones async, los errores se lanzan con throw para que Mongoose los ataje
+        console.error('Error al generar el código autoincrementable:', error);
+        throw error;
+    }
+});
+
+// 2. Método de instancia (ej: bici.toString())
+bicicletaSchema.methods.toString = function () {
+    return 'code: ' + this.code + ' | color: ' + this.color;
+};
+// READ: Obtener todas
+bicicletaSchema.statics.allBicis = function () {
+    return this.find({}); // Devuelve una promesa con todas las bicis de la BD
+};
+// CREATE: Agregar una nueva
+bicicletaSchema.statics.add = function (aBici) {
+    return this.create(aBici); // Guarda la bicicleta directamente en MongoDB
 };
 
-/* var bici1 = new Bicicleta(1, 'rojo', 'urbana', [-16.39159, -71.55123]);
-var bici2 = new Bicicleta(2, 'verde', 'montaña', [-16.38512, -71.55122]);
-var bici3 = new Bicicleta(3, 'azul', 'eléctrica', [-16.39101, -71.56141]);
+// READ ONE: Buscar por código
+bicicletaSchema.statics.findByCode = function (aCode) {
+    return this.findOne({ code: aCode });
+};
+// DELETE: Eliminar por código
+bicicletaSchema.statics.removeByCode = function (aCode) {
+    return this.deleteOne({ code: aCode });
+};
 
-Bicicleta.add(bici1);
-Bicicleta.add(bici2);
-Bicicleta.add(bici3);
- */
-module.exports = Bicicleta;
+bicicletaSchema.statics.createInstance = function (code, color, modelo, lat, lng) {
+    return new this({
+        code: code,
+        color: color,
+        modelo: modelo,
+        ubicacion: [lat, lng]
+    });
+};
+
+
+module.exports = mongoose.model('Bicicleta', bicicletaSchema);
